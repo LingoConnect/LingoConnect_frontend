@@ -33,15 +33,19 @@ export default function Practice() {
 
     useEffect(() => {
         const fetchSubQuestion = async () => {
-            const response = await getSubQuestion({ topic, id });
-            if (response.status === 200) {
-                const subQuestionList = response.data.map(element => element.question);
-                const questionList = [question, ...subQuestionList];
-                setQuestions(questionList);
+            try {
+                const response = await getSubQuestion({ topic, id });
+                if (response.status === 200) {
+                    const subQuestionList = response.data.map(element => element.question);
+                    const questionList = [question, ...subQuestionList];
+                    setQuestions(questionList);
+                }
+            } catch (error) {
+                console.error('Error fetching sub-questions:', error);
             }
         };
         fetchSubQuestion();
-    }, [topic, question]);
+    }, [topic, question, id]);
 
     useEffect(() => {
         if (answerInput.trim() === '') {
@@ -58,7 +62,9 @@ export default function Practice() {
         setActiveSendButton(false);
 
         try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+                latencyHint: 'interactive'
+            });
 
             if (!audioCtx.audioWorklet) {
                 console.error("AudioWorklet is not supported in this browser");
@@ -66,23 +72,40 @@ export default function Practice() {
             }
 
             await audioCtx.audioWorklet.addModule(process.env.PUBLIC_URL + '/analyser-processor.js');
-            const analyser = new AudioWorkletNode(audioCtx, 'analyser-processor');
-            setAnalyser(analyser);
+            const analyserNode = new AudioWorkletNode(audioCtx, 'analyser-processor');
+            analyserNode.smoothingTimeConstant = 0.3;
 
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const compressor = audioCtx.createDynamicsCompressor();
+            compressor.threshold.setValueAtTime(-50, audioCtx.currentTime);
+            compressor.knee.setValueAtTime(40, audioCtx.currentTime);
+            compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
+            compressor.attack.setValueAtTime(0, audioCtx.currentTime);
+            compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: false
+                }
+            });
             const mediaRecorder = new MediaRecorder(stream);
             setStream(stream);
             setMedia(mediaRecorder);
 
-            const source = audioCtx.createMediaStreamSource(stream);
-            setSource(source);
+            const sourceNode = audioCtx.createMediaStreamSource(stream);
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
 
-            source.connect(analyser);
-            analyser.connect(audioCtx.destination);
+            sourceNode.connect(compressor);
+            compressor.connect(filter);
+            filter.connect(analyserNode);
+            analyserNode.connect(audioCtx.destination);
 
             mediaRecorder.start();
 
-            analyser.port.onmessage = (event) => {
+            analyserNode.port.onmessage = (event) => {
                 if (event.data === 'check') {
                     setOnRec(false);
                 }
@@ -101,21 +124,20 @@ export default function Practice() {
         if (!media || !stream) return;
 
         media.ondataavailable = function (e) {
-            setAudioUrl(e.data);
+            const audioData = e.data;
+            setAudioUrl(URL.createObjectURL(audioData));
             setOnRec(true);
         };
 
         media.stop();
-        stream.getAudioTracks().forEach(function (track) {
-            track.stop();
-        });
+        stream.getAudioTracks().forEach(track => track.stop());
 
         if (analyser && source) {
             analyser.disconnect();
             source.disconnect();
         }
 
-        onSubmitAudioFile();
+        await onSubmitAudioFile();
 
         setIsRecording(false);
         setActiveMicButton(false);
@@ -123,31 +145,30 @@ export default function Practice() {
         setActiveSendButton(true);
     };
 
-    const onSubmitAudioFile = useCallback(() => {
+    const onSubmitAudioFile = useCallback(async () => {
         if (audioUrl) {
-            console.log(URL.createObjectURL(audioUrl));
+            try {
+                const response = await fetch(audioUrl);
+                const blob = await response.blob();
+                const sound = new File([blob], "soundBlob", { lastModified: new Date().getTime(), type: "audio/wav" });
 
-            // 오디오 파일 서버에 전송하는 로직 추가
-            // try {
-            //     const question = Questions[currentQuestionIndex];
-            //     const formData = new FormData();
-            //     formData.append('sound', sound);
-            //     const response = await getAudioFeedback({topic, question, formData});
-            //     if (response.status === 200) {
-            //         const data = await response.json();
-            //         console.log(data);
-            //         setScoreData(data);
-            //     } else {
-            //         console.log("error");
-            //     }
-            // } catch (error) {
-            //     console.error('Error:', error);
-            // }
+                const question = Questions[currentQuestionIndex];
+                const formData = new FormData();
+                formData.append('sound', sound);
+
+                const audioResponse = await getAudioFeedback({ topic, question, formData });
+                if (audioResponse.status === 200) {
+                    const data = await audioResponse.json();
+                    console.log(data);
+                } else {
+                    console.log("Error:", audioResponse.status);
+                }
+            } catch (error) {
+                console.error('Error submitting audio file:', error);
+            }
         }
-        // File 생성자를 사용해 파일로 변환
-        const sound = new File([audioUrl], "soundBlob", { lastModified: new Date().getTime(), type: "audio" });
-        console.log(sound); // File 정보 출력
-    }, [audioUrl]);
+    }, [audioUrl, Questions, currentQuestionIndex, topic]);
+
 
     const handleFeedback = async () => {
         if (answerInput.trim() !== '') {
@@ -227,6 +248,7 @@ export default function Practice() {
                             alt="stop"
                         />
                     </button>
+                    <button onClick={onSubmitAudioFile}>결과 확인</button>
                     <button onClick={activeSendButton ? handleFeedback : undefined}>
                         <img
                             style={activeSendButton ? {} : { opacity: '0.5' }}
@@ -236,6 +258,12 @@ export default function Practice() {
                     </button>
                 </div>
             </div>
+
+            {audioUrl && (
+                <div className="practice-audio">
+                    <audio controls src={audioUrl}></audio>
+                </div>
+            )}
         </div>
     );
 }

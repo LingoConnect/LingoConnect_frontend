@@ -15,7 +15,7 @@ export default function Feedback() {
             <img
                 className="feedback-back"
                 src={process.env.PUBLIC_URL + '/img/arrow.png'}
-                onClick={()=>navigate('/mypage')} />
+                onClick={() => navigate('/mypage')} />
             <div className="feedback-navbar">
                 <SmallTitle />
             </div>
@@ -27,7 +27,7 @@ export default function Feedback() {
 
             <div className="feedback-list">
                 {
-                    test_topics.map(function(element) {
+                    test_topics.map(function (element) {
                         return (
                             <div className="feedback-list-box">
                                 <img 

@@ -33,20 +33,14 @@ export const getFeedback = async ({ gptTitle, gptQuestion, gptUserAnswer }) => {
     }
 };
 
-export const getAudioFeedback = async ({title, question, formData}) => {
+export const getAudioFeedback = async (formData) => {
     try {
-        const encodedTitle = encodeURIComponent(title);
-        const encodedQuestion = encodeURIComponent(question);
-        const response = await axios.post(`${BASE_URL}/pronunciation/?title=${encodedTitle}&question=${encodedQuestion}`,
-            {
-                title,
-                question,
-                formData
-            },
+        const response = await axios.post(`${BASE_URL}/pronunciation/`,
+            formData,
             {
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'multipart/form-data'
                 }
             }
         )

@@ -150,13 +150,13 @@ export default function Practice() {
             try {
                 const response = await fetch(audioUrl);
                 const blob = await response.blob();
-                const sound = new File([blob], "soundBlob", { lastModified: new Date().getTime(), type: "audio/wav" });
-
+                const sound = new File([blob], "soundBlob.wav", { lastModified: new Date().getTime(), type: "audio/wav" });
+    
                 const question = Questions[currentQuestionIndex];
                 const formData = new FormData();
-                formData.append('sound', sound);
-
-                const audioResponse = await getAudioFeedback({ topic, question, formData });
+                formData.append("sound", sound);
+    
+                const audioResponse = await getAudioFeedback(formData);
                 if (audioResponse.status === 200) {
                     const data = await audioResponse.json();
                     console.log(data);

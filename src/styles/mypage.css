@@ -264,6 +264,8 @@
     opacity: 1;
 }
 
+.mypage-feedback-topic h4 img:hover
+
 .mypage-feedback-topic h4 {
     position: relative;
     z-index: 1;

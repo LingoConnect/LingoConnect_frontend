@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import '../styles/mypage.css';
 import Top from '../components/top';
+import { test_topics } from "./data_test";
 
 
 export default function MyPageTest() {
@@ -85,16 +86,16 @@ function MyFeedbackBox({ element }) {
             <div className="mypage-feedback-box">
                 <div className="mypage-feedback-topic">
                     <img 
-                        src={process.env.PUBLIC_URL + '/img/일상.jpg'} />
-                    <h4>일상</h4>
+                        src={process.env.PUBLIC_URL + test_topics[0].imgUrl} />
+                    <h4>{test_topics[0].topic}</h4>
                 </div>
                 <div className="mypage-feedback-topic">
-                    <img src={process.env.PUBLIC_URL + '/img/학교.jpg'} />
-                    <h4>학교</h4>
+                    <img src={process.env.PUBLIC_URL + test_topics[1].imgUrl} />
+                    <h4>{test_topics[1].topic}</h4>
                 </div>
                 <div className="mypage-feedback-topic">
-                    <img src={process.env.PUBLIC_URL + '/img/음식.jpg'} />
-                    <h4>음식</h4>
+                    <img src={process.env.PUBLIC_URL + test_topics[2].imgUrl} />
+                    <h4>{test_topics[2].topic}</h4>
                 </div>
             </div>
         </div>

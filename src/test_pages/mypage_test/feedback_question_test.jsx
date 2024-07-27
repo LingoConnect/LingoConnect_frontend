@@ -20,7 +20,7 @@ export default function FeedbackQuestionTest() {
             <img
                 className="feedbackquestion-back"
                 src={process.env.PUBLIC_URL + '/img/arrow.png'}
-                onClick={()=>navigate('/mypage/feedback')}/>
+                onClick={()=>navigate(-1)}/>
             <div className="feedbackquestion-navbar">
                 <SmallTitle />
             </div>

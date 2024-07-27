@@ -4,40 +4,43 @@ import '../../styles/practice.css';
 import { getFeedback, getAudioFeedback } from '../../api/ai_api';
 import { getSubQuestion } from '../../api/learning_content_api';
 
-const PracticeConnent = forwardRef((ref) => {
+const PracticeContent = forwardRef((_, ref) => {
     const { topic, question, id } = useParams();
     const navigate = useNavigate();
     const [answerInput, setAnswerInput] = useState('');
-    const [feedback, setFeedback] = useState('');
-    const [Questions, setQuestions] = useState([]);
+    const [score, setScore] = useState('');
+
+    const [Questions, setQuestions] = useState([]); //전체 질문 리스트
+    const [answers, setAnswers] = useState([]); //전체 답변 리스트
+    const [feedbacks, setFeedbacks] = useState([]); //전체 피드백 리스트
+
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState([]);
-    const [feedbacks, setFeedbacks] = useState([]);
-    const [isRecording, setIsRecording] = useState(false);
+
     const [activeMicButton, setActiveMicButton] = useState(true);
     const [activeStopButton, setActiveStopButton] = useState(false);
     const [activeSendButton, setActiveSendButton] = useState(false);
+
+    const [onRec, setOnRec] = useState(true); //녹음 기능 사용 여부
+
     const [stream, setStream] = useState(null);
     const [media, setMedia] = useState(null);
-    const [onRec, setOnRec] = useState(true);
     const [source, setSource] = useState(null);
     const [analyser, setAnalyser] = useState(null);
     const [audioUrl, setAudioUrl] = useState(null);
 
     useEffect(() => {
+
         setCurrentQuestionIndex(0);
-        setActiveMicButton(true);
         setActiveStopButton(false);
         setActiveSendButton(false);
-    }, []);
 
-    useEffect(() => {
         const fetchSubQuestion = async () => {
             try {
                 const response = await getSubQuestion({ topic, id });
                 if (response.status === 200) {
                     const subQuestionList = response.data.map(element => element.question);
                     const questionList = [question, ...subQuestionList];
+                    setActiveMicButton(true);
                     setQuestions(questionList);
                 }
             } catch (error) {
@@ -45,15 +48,23 @@ const PracticeConnent = forwardRef((ref) => {
             }
         };
         fetchSubQuestion();
-    }, [topic, question, id]);
+
+    }, []);
 
     useEffect(() => {
-        if (answerInput.trim() === '') {
-            setActiveSendButton(false);
-        } else {
-            setActiveSendButton(true);
+        if (currentQuestionIndex !== Questions.length) { //마지막 질문이 아닐 때
+            if (answerInput.trim() === '') {
+                setActiveSendButton(false);
+            } else {
+                setActiveSendButton(true);
+            }
         }
-    }, [answerInput, currentQuestionIndex, Questions.length]);
+        else { //마지막 질문일 때
+            setActiveMicButton(false);
+            setActiveStopButton(false);
+            setActiveSendButton(false);
+        }
+    }, [answerInput, currentQuestionIndex]);
 
     useEffect(() => {
         if (ref.current) {
@@ -61,8 +72,9 @@ const PracticeConnent = forwardRef((ref) => {
         }
     }, [currentQuestionIndex, ref]);
 
+    // 마이크 버튼을 누를 때
     const startRecording = async () => {
-        setIsRecording(true);
+        setOnRec(true);
         setActiveMicButton(false);
         setActiveStopButton(true);
         setActiveSendButton(false);
@@ -113,26 +125,25 @@ const PracticeConnent = forwardRef((ref) => {
 
             analyserNode.port.onmessage = (event) => {
                 if (event.data === 'check') {
-                    setOnRec(false);
+                    setOnRec(true);
                 }
             };
 
         } catch (error) {
             console.error('Error accessing microphone:', error);
-            setIsRecording(false);
             setActiveMicButton(true);
             setActiveStopButton(false);
             setActiveSendButton(false);
         }
     };
 
+    // 녹음 중지 버튼을 누를 때
     const stopRecording = async () => {
         if (!media || !stream) return;
 
         media.ondataavailable = function (e) {
             const audioData = e.data;
             setAudioUrl(URL.createObjectURL(audioData));
-            setOnRec(true);
         };
 
         media.stop();
@@ -143,69 +154,64 @@ const PracticeConnent = forwardRef((ref) => {
             source.disconnect();
         }
 
-        await onSubmitAudioFile();
-
-        setIsRecording(false);
         setActiveMicButton(false);
         setActiveStopButton(false);
         setActiveSendButton(true);
     };
 
-    const onSubmitAudioFile = useCallback(async () => {
-        if (audioUrl) {
-            try {
-                const response = await fetch(audioUrl);
-                const blob = await response.blob();
-                const arrayBuffer = await blob.arrayBuffer();
-                
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                
-                console.log(audioBuffer);
-    
-               const audioResponse = await getAudioFeedback(audioBuffer);
-                if (audioResponse.status === 200) {
-                    const data = await audioResponse.json();
-                    console.log(data);
-                } else {
-                    console.log("Error:", audioResponse.status);
-                }
-            } catch (error) {
-                console.error('Error submitting audio file:', error);
-            }
-        }
-    }, [audioUrl, Questions, currentQuestionIndex, topic]);
-    
-
-
+    // 전송 버튼을 누를 때
     const handleFeedback = async () => {
-        if (answerInput.trim() !== '') {
-            const currentQuestion = Questions[currentQuestionIndex];
-            const gptTitle = "주제: " + topic + "\n";
-            const gptQuestion = "친구: " + currentQuestion + "\n";
-            const gptUserAnswer = "사용자: " + answerInput;
-            console.log(gptTitle, gptQuestion, gptUserAnswer);
 
-            const response = await getFeedback({ gptTitle, gptQuestion, gptUserAnswer });
-            if (response.status === 200) {
-                console.log(response.data);
-                setFeedbacks([...feedbacks, { feedback: response.data }]);
-                setAnswers([...answers, answerInput]);
-                setAnswerInput('');
-                setFeedback('');
-                setCurrentQuestionIndex(currentQuestionIndex + 1);
-                setActiveMicButton(true);
-                setActiveStopButton(false);
-            } else {
-                alert("error");
+        if (onRec === true) {
+            if (audioUrl) {
+                try {
+                    const response = await fetch(audioUrl);
+                    const blob = await response.blob();
+                    const sound = new File([blob], "soundBlob.wav", { lastModified: new Date().getTime(), type: "audio/wav" });
+
+                    const question = Questions[currentQuestionIndex];
+                    const formData = new FormData();
+                    formData.append('audio', sound);
+
+                    const audioResponse = await getAudioFeedback(formData);
+                    if (audioResponse.status === 200) {
+                        const data = await audioResponse.json();
+                        console.log(data);
+                    } else {
+                        console.log("Error:", audioResponse.status);
+                    }
+                } catch (error) {
+                    console.error('Error submitting audio file:', error);
+                }
             }
+            setOnRec(false);
         }
+        
+        const currentQuestion = Questions[currentQuestionIndex];
+        const gptTitle = "주제: " + topic + "\n";
+        const gptQuestion = "친구: " + currentQuestion + "\n";
+        const gptUserAnswer = "사용자: " + answerInput;
+        console.log(gptTitle, gptQuestion, gptUserAnswer);
+
+        const response = await getFeedback({ gptTitle, gptQuestion, gptUserAnswer });
+        if (response.status === 200) {
+            console.log(response.data);
+            setFeedbacks([...feedbacks, { feedback: response.data, score: score }]);
+            setAnswers([...answers, answerInput]);
+            setScore('');
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+            setActiveMicButton(true);
+            setActiveStopButton(false);
+        } else {
+            alert("error");
+        }
+        setAnswerInput('');
     };
 
     return (
         <div className="practice-container">
             <div className="practice-navbar">
-                <img src={process.env.PUBLIC_URL + '/img/arrow.png'} alt="arrow" />
+                <img src={process.env.PUBLIC_URL + '/img/arrow.png'} alt="arrow" onClick={() => navigate(-1)} />
                 <h4>주제: {topic}</h4>
             </div>
 
@@ -216,14 +222,11 @@ const PracticeConnent = forwardRef((ref) => {
                             <AIChat question={question} />
                             {index < answers.length && (
                                 <div className="practice-chat-answer">
-                                    <p className="answer-box">{answers[index]}</p>
-                                    <div className="feedback-box">
-                                        <img src={process.env.PUBLIC_URL + '/img/cat.png'} alt="cat" />
-                                        <p>{feedbacks[index].feedback}</p>
-                                    </div>
-                                    <div className="score-box">
-                                        {/* <p>{feedbacks[index].score}</p> */}
-                                    </div>
+                                    <UserChat index={index} answers={answers} />
+                                    <AIFeedback index={index} feedbacks={feedbacks} />
+                                    {
+                                        score.trim() !== '' && <ScoreBox index={index} feedbacks={feedbacks} />
+                                    }
                                 </div>
                             )}
                         </React.Fragment>
@@ -234,32 +237,43 @@ const PracticeConnent = forwardRef((ref) => {
                     <div className="practice-finish">
                         <p>준비된 질문은 여기까지에요.</p>
                         <p><span onClick={() => navigate("/main")}>마이페이지</span>에서 저장된 피드백들을 반복적으로 학습해보아요!</p>
-                        <h4 onClick={() => navigate(`/main/${topic}/${question}/result`)}>❗피드백 보기❗</h4>
+                        <h4 onClick={() => navigate(`/mypage/feedback`)}>❗마이페이지 피드백 모아보기❗</h4>
                     </div>
                 }
+                <div ref={ref} />
             </div>
 
             <div className="practice-input">
-                <input value={answerInput} onChange={(event) => setAnswerInput(event.target.value)} />
+                <input
+                    value={answerInput}
+                    onChange={(event) => setAnswerInput(event.target.value)}
+                    onKeyUp={(event) => {
+                        if (answerInput.trim() !== '') {
+                            if (event.key === 'Enter') {
+                                handleFeedback();
+                            }
+
+                        }
+                    }}
+                />
                 <div className="practice-input-send">
-                    <button onClick={activeMicButton ? startRecording : undefined} disabled={isRecording}>
+                    <button onClick={activeMicButton ? startRecording : undefined}>
                         <img
-                            style={activeMicButton ? {} : { opacity: '0.5' }}
+                            style={activeMicButton ? {} : { opacity: '0.3' }}
                             src={process.env.PUBLIC_URL + '/img/mic.png'}
                             alt="mic"
                         />
                     </button>
-                    <button onClick={activeStopButton ? stopRecording : undefined} disabled={!isRecording}>
+                    <button onClick={activeStopButton ? stopRecording : undefined}>
                         <img
-                            style={activeStopButton ? {} : { opacity: '0.5' }}
+                            style={activeStopButton ? {} : { opacity: '0.3' }}
                             src={process.env.PUBLIC_URL + '/img/stop.png'}
                             alt="stop"
                         />
                     </button>
-                    <button onClick={onSubmitAudioFile}>결과 확인</button>
                     <button onClick={activeSendButton ? handleFeedback : undefined}>
                         <img
-                            style={activeSendButton ? {} : { opacity: '0.5' }}
+                            style={activeSendButton ? {} : { opacity: '0.3' }}
                             src={process.env.PUBLIC_URL + '/img/send.png'}
                             alt="send"
                         />
@@ -298,19 +312,19 @@ export function UserChat({ index, answers }) {
     );
 }
 
-export function AIFeedback({ index, test_feedback }) {
+export function AIFeedback({ index, feedbacks }) {
     return (
         <div className="feedback-box">
             <img src={process.env.PUBLIC_URL + '/img/cat.png'} alt="cat" />
-            <p>{test_feedback[index].feedback}</p>
+            <p>{feedbacks[index].feedback}</p>
         </div>
     );
 }
 
-export function ScoreBox({ index, test_feedback }) {
+export function ScoreBox({ index, feedbacks }) {
     return (
         <div className="score-box">
-            <p>{test_feedback[index].score}</p>
+            <p>{feedbacks[index].score}</p>
         </div>
     );
 }
@@ -319,6 +333,6 @@ export default function Practice() {
     const messageEndRef = useRef(null);
 
     return (
-        <PracticeConnent ref={messageEndRef} />
+        <PracticeContent ref={messageEndRef} />
     );
 }

@@ -1,21 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import '../../styles/mypage.css';
 import Top from '../../components/top';
-import { test_topics } from "../../test_pages/data_test";
-
+import { getTopic } from '../../api/learning_content_api';
 
 export default function MyPage() {
     const navigate = useNavigate();
-    const [list, setList] = useState([
-        {
-            subject: "피드백 모아보기",
-            url: "/mypage/feedback"
-        },
-        {
-            subject: "자주 하는 실수(패턴) 분석",
-            url: "/mypage/pattern"
-        }])
+    const [topics, setTopics] = useState([]);
+
+    useEffect(() => {
+        const fetchTopics = async () => {
+            const response = await getTopic();
+            if (response.status === 200) {
+                setTopics(response.data);
+            }
+        };
+
+        fetchTopics();
+    }, []);
 
     return (
         <div className="mypage-container">
@@ -56,13 +58,8 @@ export default function MyPage() {
                     </div>
                 </div>
                 <div className="mypage-feedback">
-                    {
-                        list.map(function (element) {
-                            return (
-                                <MyFeedbackBox element={element} />
-                            )
-                        })
-                    }
+                    <MyFeedbackBox title="피드백 모아보기" navigate_url="/mypage/feedback" topics={topics} />
+                    <MyFeedbackBox title="자주 하는 실수(패턴) 분석" navigate_url="/mypage/pattern" topics={topics} />
                 </div>
             </div>
 
@@ -72,31 +69,29 @@ export default function MyPage() {
     )
 }
 
-function MyFeedbackBox({ element }) {
+function MyFeedbackBox({ title, navigate_url, topics }) {
     const navigate = useNavigate();
 
     return (
         <div className="mypage-feedback-container">
             <div className="mypage-feedback-top">
-                <p>• {element.subject}</p>
-                <img 
+                <p>• {title}</p>
+                <img
                     src={process.env.PUBLIC_URL + '/img/plus.png'}
-                    onClick={() => navigate(`${element.url}`)} />
+                    onClick={() => navigate(`${navigate_url}`)} />
             </div>
             <div className="mypage-feedback-box">
-                <div className="mypage-feedback-topic">
-                    <img 
-                        src={process.env.PUBLIC_URL + test_topics[0].imgUrl} />
-                    <h4>{test_topics[0].topic}</h4>
-                </div>
-                <div className="mypage-feedback-topic">
-                    <img src={process.env.PUBLIC_URL + test_topics[1].imgUrl} />
-                    <h4>{test_topics[1].topic}</h4>
-                </div>
-                <div className="mypage-feedback-topic">
-                    <img src={process.env.PUBLIC_URL + test_topics[2].imgUrl} />
-                    <h4>{test_topics[2].topic}</h4>
-                </div>
+                {
+                    topics.slice(0, 3).map((topic) => {
+                        return (
+                            <div className="mypage-feedback-topic">
+                                <img
+                                    src={topic.image_url} />
+                                <h4>{topic.topic}</h4>
+                            </div>
+                        )
+                    })
+                }
             </div>
         </div>
     )

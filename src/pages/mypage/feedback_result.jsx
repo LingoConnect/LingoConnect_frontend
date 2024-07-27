@@ -1,22 +1,31 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect} from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../../styles/feedback_result.css';
-import { test_subquestions, test_feedback } from '../../test_pages/data_test';
 import { SmallTitle } from '../../components/title';
 import { AIChat, UserChat, AIFeedback, ScoreBox } from '../practice/practice';
+import { getMyFeedback } from '../../api/mypage_api';
 
 export default function FeedbackResult() {
-    const [answers, setAnswers] = useState(['수학이 제일 좋아']);
-    const { topic, question } = useParams();
+    const { topic, id, question } = useParams();
     const navigate = useNavigate();
+    const [myFeedback, setMyFeedback] = useState([]);
 
-    
+    useEffect(() => {
+        const fetchMyFeedback = async () => {
+            const response = await getMyFeedback({ topic, id });
+            if (response.status === 200) {
+                setMyFeedback(response.data);
+            }
+        };
+        fetchMyFeedback();
+    }, [topic]);
+
     return (
         <div className="feedbackresult-container">
             <img
                 className="feedbackresult-back"
                 src={process.env.PUBLIC_URL + '/img/arrow.png'}
-                onClick={()=>navigate('/mypage/feedback')}/>
+                onClick={() => navigate('/mypage/feedback')} />
             <div className="feedbackresult-navbar">
                 <SmallTitle />
             </div>
@@ -31,15 +40,17 @@ export default function FeedbackResult() {
             </div> */}
 
             <div className="feedbackresult-box">
-                <AIChat question={question} />
-                <UserChat index={0} answers={answers} />
-                <AIFeedback index={0} test_feedback={test_feedback} />
-                <AIChat question={question} />
-                <UserChat index={0} answers={answers} />
-                <AIFeedback index={0} test_feedback={test_feedback} />
-                <AIChat question={question} />
-                <UserChat index={0} answers={answers} />
-                <AIFeedback index={0} test_feedback={test_feedback} />
+                {
+                    myFeedback.map((element) => {
+                        return (
+                            <>
+                                <AIChat question={element.question} />
+                                <UserChat index={0} answers={element.answer} />
+                                <AIFeedback index={0} feedback={element.feedback} />
+                            </>
+                        )
+                    })
+                }
             </div>
 
             <div className="result-box-gradient">

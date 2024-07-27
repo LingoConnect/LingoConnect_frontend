@@ -1,21 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../../styles/pattern_result.css';
 import { SmallTitle } from '../../components/title';
+import { getMyPattern } from '../../api/mypage_api';
 import { test_mypage_pattern } from '../../test_pages/data_test';
-
 
 export default function PatternResult() {
     const navigate = useNavigate();
-    const { topic } = useParams();    
-    const [index, setIndex] = useState(0);    
-    
+    const { topic } = useParams();
+    const [index, setIndex] = useState(0);
+    const [patterns, setPatterns] = useState('');
+
+    useEffect(() => {
+        const fetchMyFeedback = async () => {
+            const response = await getMyPattern({ topic });
+            if (response.status === 200) {
+                setPatterns(response.data);
+            }
+        };
+        fetchMyFeedback();
+    }, [topic]);
+
     return (
         <div className="PatternResult-container">
             <img
                 className="PatternResult-back"
                 src={process.env.PUBLIC_URL + '/img/arrow.png'}
-                onClick={()=>navigate('/mypage/pattern')}/>
+                onClick={() => navigate('/mypage/pattern')} />
             <div className="PatternResult-navbar">
                 <SmallTitle />
             </div>
@@ -26,12 +37,12 @@ export default function PatternResult() {
             </div>
 
             <div className="PatternResult-index">
-                <p>{index+1}/{test_mypage_pattern[1].length}</p>
+                <p>{index + 1}/{patterns.length}</p>
             </div>
             <div className="PatternResult-card">
                 <ResultCard index={index} setIndex={setIndex} />
             </div>
-            
+
             <div className="PatternResult-img">
                 <img src={process.env.PUBLIC_URL + '/img/mummy.png'} />
             </div>
@@ -40,18 +51,18 @@ export default function PatternResult() {
     )
 }
 
-function ResultCard({index, setIndex}) {
+function ResultCard({ index, setIndex }) {
     return (
         <div className="resultcard-container">
 
             <div className="resultcard-left">
                 {
                     (index != 0) &&
-                    <h4 onClick={(e)=>{
-                            if (index>0) {
-                                setIndex(index-1);
-                            }
-                            e.stopPropagation();                
+                    <h4 onClick={(e) => {
+                        if (index > 0) {
+                            setIndex(index - 1);
+                        }
+                        e.stopPropagation();
                     }}>&lt;</h4>
                 }
             </div>
@@ -61,14 +72,14 @@ function ResultCard({index, setIndex}) {
             </div>
             <div className="resultcard-right">
                 {
-                    (index != (test_mypage_pattern[1].length-1)) &&
-                    <h4 onClick={(e)=>{
-                            if (index<100) {
-                                setIndex(index+1);
-                            }
-                            e.stopPropagation();                
+                    (index != (test_mypage_pattern[1].length - 1)) &&
+                    <h4 onClick={(e) => {
+                        if (index < 100) {
+                            setIndex(index + 1);
+                        }
+                        e.stopPropagation();
                     }}>&gt;</h4>
-                }    
+                }
             </div>
         </div>
     )

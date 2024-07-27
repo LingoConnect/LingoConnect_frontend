@@ -1,39 +1,52 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import '../../styles/feedback.css';
 import { SmallTitle } from '../../components/title';
-import { test_topics } from '../../test_pages/data_test';
+import { getTopic } from '../../api/learning_content_api';
 
-export default function Feedback() {
+export default function Feedback({ path, title }) {
     const navigate = useNavigate();
+    const [topics, setTopics] = useState([]);
 
     const handleTopicClick = (topic) => {
-        navigate(`/mypage/feedback/${topic}`);
+        navigate(`/mypage/${path}/${topic}`);
     }
+
+    useEffect(() => {
+        const fetchTopics = async () => {
+            const response = await getTopic();
+            if (response.status === 200) {
+                setTopics(response.data);
+            }
+        };
+
+        fetchTopics();
+    }, []);
 
     return (
         <div className="feedback-container">
             <img
                 className="feedback-back"
                 src={process.env.PUBLIC_URL + '/img/arrow.png'}
-                onClick={()=>navigate('/mypage')} />
+                onClick={() => navigate('/mypage')} />
             <div className="feedback-navbar">
                 <SmallTitle />
             </div>
 
             <div className="feedback-main">
                 <img src={process.env.PUBLIC_URL + '/img/cat.png'} />
-                <h4>피드백 모아보기</h4>
+                <h4>{title}</h4>
             </div>
 
             <div className="feedback-list">
                 {
-                    test_topics.map(function(element) {
+                    topics.map((element) => {
                         return (
                             <div className="feedback-list-box">
-                                <img 
-                                    src={process.env.PUBLIC_URL + element.imgUrl}
-                                    onClick={()=> { handleTopicClick(element.topic)}} />
-                                <h4 onClick={()=> { handleTopicClick(element.topic)}}>{element.topic}</h4>
+                                <img
+                                    src={element.image_url}
+                                    onClick={() => { handleTopicClick(element.topic) }} />
+                                <h4 onClick={() => { handleTopicClick(element.topic) }}>{element.topic}</h4>
                             </div>
                         )
                     })
@@ -41,9 +54,6 @@ export default function Feedback() {
                 <div className="feedback-list-box-transparent" />
                 <div className="feedback-list-box-transparent" />
             </div>
-
-
-
         </div>
     )
 }

@@ -1,26 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { test_mainquestions } from '../../test_pages/data_test';
 import '../../styles/feedback_question.css';
 import { SmallTitle } from '../../components/title';
 import { getMainQuestion } from '../../api/learning_content_api';
-
 
 export default function FeedbackQuestion() {
     const navigate = useNavigate();
     const { topic } = useParams();
     const [isLatest, setIsLatest] = useState(true);
+    const [mainQuestions, setMainQuestions] = useState([]);
 
-    const handleQuestionClick = (question) => {
-        navigate (`/mypage/feedback/${topic}/${question}`);
+    const handleQuestionClick = (element) => {
+        const question = element.question;
+        const id = element.mainQuestionId;
+        navigate(`/mypage/feedback/${topic}/${id}/${question}`);
     }
 
-    return(
+    useEffect(() => {
+        const fetchMainQuestion = async () => {
+            const response = await getMainQuestion({ topic });
+            if (response.status === 200) {
+                setMainQuestions(response.data);
+            }
+        };
+        fetchMainQuestion();
+    }, [topic]);
+
+    return (
         <div className="feedbackquestion-container">
             <img
                 className="feedbackquestion-back"
                 src={process.env.PUBLIC_URL + '/img/arrow.png'}
-                onClick={()=>navigate('/mypage/feedback')}/>
+                onClick={() => navigate('/mypage/feedback')} />
             <div className="feedbackquestion-navbar">
                 <SmallTitle />
             </div>
@@ -30,22 +41,22 @@ export default function FeedbackQuestion() {
             </div>
             <div className="feedbackquestion-order">
                 {isLatest == true ?
-                    <p onClick={()=>setIsLatest(false)}>최신순 ∨</p> : <p onClick={()=>setIsLatest(true)}>오래된 순 ∨</p>
+                    <p onClick={() => setIsLatest(false)}>최신순 ∨</p> : <p onClick={() => setIsLatest(true)}>오래된 순 ∨</p>
                 }
             </div>
 
             <div className="feedbackquestion-list">
                 {
-                    test_mainquestions.map((element, index) => {
+                    mainQuestions.map((element, index) => {
                         return (
-                            <div 
+                            <div
                                 className="feedbackquestion-list-q"
-                                onClick={()=> handleQuestionClick(element)}>
+                                onClick={() => handleQuestionClick(element)}>
                                 <div className="fq-question">
-                                    <h4>{index+1}.&nbsp;</h4>
-                                    <h5>{element}</h5>
+                                    <h4>{index + 1}.&nbsp;</h4>
+                                    <h5>{element.question}</h5>
                                 </div>
-                                <p>초급</p>
+                                <p>{element.difficulty}</p>
                             </div>
                         )
                     })

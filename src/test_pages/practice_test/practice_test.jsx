@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import '../../styles/practice.css';
 import { test_subquestions, test_feedback } from '../data_test';
 
-const App = forwardRef((ref) => {
+const App = forwardRef((_, ref) => {
     const { topic, question } = useParams();
     const test_questions = [question, ...test_subquestions];
     const [answerInput, setAnswerInput] = useState('');

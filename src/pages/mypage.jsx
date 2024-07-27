@@ -78,7 +78,7 @@ function MyFeedbackBox({ element }) {
         <div className="mypage-feedback-container">
             <div className="mypage-feedback-top">
                 <p>• {element.subject}</p>
-                <img
+                <img 
                     src={process.env.PUBLIC_URL + '/img/plus.png'}
                     onClick={() => navigate(`${element.url}`)} />
             </div>

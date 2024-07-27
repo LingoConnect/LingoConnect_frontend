@@ -2,16 +2,12 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import '../styles/pattern_result.css';
 import { SmallTitle } from '../components/title';
+import { test_mypage_pattern } from './data_test';
 
 
 export default function PatternResultTest() {
     const navigate = useNavigate();
-    const { topic } = useParams();
-    const [feedback, setFeedback] = useState([
-        '자신의 생각이나 느낌을 말할 때 그 이유를 충분히 설명하지 않는 경우가 많습니다. 자신의 의견에 대해 구체적인 이유를 덧붙이면 좋습니다!',
-        '질문에 대해 단답형으로 대답하는 경향이 있습니다. 대답을 할 때 두세 문장 이상으로 대답해보는 연습을 해보아요!',
-        '구체적인 예시를 들지 않고 추상적으로 설명하는 경우가 많습니다. 구체적인 상황이나 예시를 들어 설명해보아요!'])
-    
+    const { topic } = useParams();    
     const [index, setIndex] = useState(0);    
     
     return (
@@ -30,10 +26,10 @@ export default function PatternResultTest() {
             </div>
 
             <div className="PatternResult-index">
-                <p>{index+1}/3</p>
+                <p>{index+1}/{test_mypage_pattern[1].length}</p>
             </div>
             <div className="PatternResult-card">
-                <ResultCard index={index} setIndex={setIndex} feedback={feedback} />
+                <ResultCard index={index} setIndex={setIndex} />
             </div>
             
             <div className="PatternResult-img">
@@ -44,7 +40,7 @@ export default function PatternResultTest() {
     )
 }
 
-function ResultCard({index, setIndex, feedback}) {
+function ResultCard({index, setIndex}) {
     return (
         <div className="resultcard-container">
 
@@ -61,13 +57,13 @@ function ResultCard({index, setIndex, feedback}) {
             </div>
             <div className="resultcard-card">
                 <img src={process.env.PUBLIC_URL + '/img/light.png'} />
-                <h4>{feedback[index]}</h4>
+                <h4>{test_mypage_pattern[1][index]}</h4>
             </div>
             <div className="resultcard-right">
                 {
-                    (index !=2) &&
+                    (index != (test_mypage_pattern[1].length-1)) &&
                     <h4 onClick={(e)=>{
-                            if (index<3) {
+                            if (index<100) {
                                 setIndex(index+1);
                             }
                             e.stopPropagation();                

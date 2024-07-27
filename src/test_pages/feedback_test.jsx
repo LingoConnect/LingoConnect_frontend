@@ -33,11 +33,13 @@ export default function FeedbackTest() {
                                 <img 
                                     src={process.env.PUBLIC_URL + element.imgUrl}
                                     onClick={()=> { handleTopicClick(element.topic)}} />
-                                <h4>{element.topic}</h4>
+                                <h4 onClick={()=> { handleTopicClick(element.topic)}}>{element.topic}</h4>
                             </div>
                         )
                     })
                 }
+                <div className="feedback-list-box-transparent" />
+                <div className="feedback-list-box-transparent" />
             </div>
 
 

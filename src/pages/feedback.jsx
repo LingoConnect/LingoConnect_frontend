@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import '../styles/feedback.css';
 import { SmallTitle } from '../components/title';
-import { test_topics } from '../test_pages/data_test';
+import { test_topics } from './data_test';
 
 export default function Feedback() {
     const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function Feedback() {
             <img
                 className="feedback-back"
                 src={process.env.PUBLIC_URL + '/img/arrow.png'}
-                onClick={() => navigate('/mypage')} />
+                onClick={()=>navigate('/mypage')} />
             <div className="feedback-navbar">
                 <SmallTitle />
             </div>
@@ -27,7 +27,7 @@ export default function Feedback() {
 
             <div className="feedback-list">
                 {
-                    test_topics.map(function (element) {
+                    test_topics.map(function(element) {
                         return (
                             <div className="feedback-list-box">
                                 <img 

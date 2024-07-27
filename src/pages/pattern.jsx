@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 import '../styles/pattern.css';
 import { SmallTitle } from '../components/title';
-import { test_topics } from '../test_pages/data_test';
+import { test_topics } from './data_test';
 
 export default function Pattern() {
     const navigate = useNavigate();

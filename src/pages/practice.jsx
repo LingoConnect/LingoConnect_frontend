@@ -150,13 +150,14 @@ export default function Practice() {
             try {
                 const response = await fetch(audioUrl);
                 const blob = await response.blob();
-                const sound = new File([blob], "soundBlob.wav", { lastModified: new Date().getTime(), type: "audio/wav" });
+                const arrayBuffer = await blob.arrayBuffer();
+                
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                console.log(audioBuffer);
     
-                const question = Questions[currentQuestionIndex];
-                const formData = new FormData();
-                formData.append("sound", sound);
-    
-                const audioResponse = await getAudioFeedback(formData);
+               const audioResponse = await getAudioFeedback(audioBuffer);
                 if (audioResponse.status === 200) {
                     const data = await audioResponse.json();
                     console.log(data);
@@ -168,6 +169,7 @@ export default function Practice() {
             }
         }
     }, [audioUrl, Questions, currentQuestionIndex, topic]);
+    
 
 
     const handleFeedback = async () => {

@@ -4,19 +4,22 @@ import '../../styles/practice.css';
 import { getFeedback, getAudioFeedback } from '../../api/ai_api';
 import { getSubQuestion } from '../../api/learning_content_api';
 
-const PracticeConnent = forwardRef((ref) => {
+const PracticeContent = forwardRef((_, ref) => {
     const { topic, question, id } = useParams();
     const navigate = useNavigate();
     const [answerInput, setAnswerInput] = useState('');
-    const [feedback, setFeedback] = useState('');
-    const [Questions, setQuestions] = useState([]);
+
+    const [Questions, setQuestions] = useState([]); //전체 질문 리스트
+    const [answers, setAnswers] = useState([]); //전체 답변 리스트
+    const [feedbacks, setFeedbacks] = useState([]); //전체 피드백 리스트
+
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState([]);
-    const [feedbacks, setFeedbacks] = useState([]);
+
     const [isRecording, setIsRecording] = useState(false);
     const [activeMicButton, setActiveMicButton] = useState(true);
     const [activeStopButton, setActiveStopButton] = useState(false);
     const [activeSendButton, setActiveSendButton] = useState(false);
+
     const [stream, setStream] = useState(null);
     const [media, setMedia] = useState(null);
     const [onRec, setOnRec] = useState(true);
@@ -157,13 +160,13 @@ const PracticeConnent = forwardRef((ref) => {
                 const response = await fetch(audioUrl);
                 const blob = await response.blob();
                 const arrayBuffer = await blob.arrayBuffer();
-                
+
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                
+
                 console.log(audioBuffer);
-    
-               const audioResponse = await getAudioFeedback(audioBuffer);
+
+                const audioResponse = await getAudioFeedback(audioBuffer);
                 if (audioResponse.status === 200) {
                     const data = await audioResponse.json();
                     console.log(data);
@@ -175,7 +178,7 @@ const PracticeConnent = forwardRef((ref) => {
             }
         }
     }, [audioUrl, Questions, currentQuestionIndex, topic]);
-    
+
 
 
     const handleFeedback = async () => {
@@ -192,7 +195,6 @@ const PracticeConnent = forwardRef((ref) => {
                 setFeedbacks([...feedbacks, { feedback: response.data }]);
                 setAnswers([...answers, answerInput]);
                 setAnswerInput('');
-                setFeedback('');
                 setCurrentQuestionIndex(currentQuestionIndex + 1);
                 setActiveMicButton(true);
                 setActiveStopButton(false);
@@ -205,7 +207,7 @@ const PracticeConnent = forwardRef((ref) => {
     return (
         <div className="practice-container">
             <div className="practice-navbar">
-                <img src={process.env.PUBLIC_URL + '/img/arrow.png'} alt="arrow" />
+                <img src={process.env.PUBLIC_URL + '/img/arrow.png'} alt="arrow" onClick={() => navigate(-1)} />
                 <h4>주제: {topic}</h4>
             </div>
 
@@ -216,14 +218,9 @@ const PracticeConnent = forwardRef((ref) => {
                             <AIChat question={question} />
                             {index < answers.length && (
                                 <div className="practice-chat-answer">
-                                    <p className="answer-box">{answers[index]}</p>
-                                    <div className="feedback-box">
-                                        <img src={process.env.PUBLIC_URL + '/img/cat.png'} alt="cat" />
-                                        <p>{feedbacks[index].feedback}</p>
-                                    </div>
-                                    <div className="score-box">
-                                        {/* <p>{feedbacks[index].score}</p> */}
-                                    </div>
+                                    <UserChat index={index} answers={answers[index]} />
+                                    <AIFeedback index={index} feedback={feedbacks[index].feedback} />
+                                    {/* <ScoreBox index={index} feedback={feedbacks[index].score} /> */}
                                 </div>
                             )}
                         </React.Fragment>
@@ -298,19 +295,19 @@ export function UserChat({ index, answers }) {
     );
 }
 
-export function AIFeedback({ index, test_feedback }) {
+export function AIFeedback({ index, feedback }) {
     return (
         <div className="feedback-box">
             <img src={process.env.PUBLIC_URL + '/img/cat.png'} alt="cat" />
-            <p>{test_feedback[index].feedback}</p>
+            <p>{feedback[index].feedback}</p>
         </div>
     );
 }
 
-export function ScoreBox({ index, test_feedback }) {
+export function ScoreBox({ index, feedback }) {
     return (
         <div className="score-box">
-            <p>{test_feedback[index].score}</p>
+            <p>{feedback[index].score}</p>
         </div>
     );
 }
@@ -319,6 +316,6 @@ export default function Practice() {
     const messageEndRef = useRef(null);
 
     return (
-        <PracticeConnent ref={messageEndRef} />
+        <PracticeContent ref={messageEndRef} />
     );
 }

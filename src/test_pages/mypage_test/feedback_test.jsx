@@ -3,7 +3,7 @@ import '../../styles/feedback.css';
 import { SmallTitle } from '../../components/title';
 import { test_topics } from '../data_test';
 
-export default function FeedbackTest() {
+export default function FeedbackTest({title}) {
     const navigate = useNavigate();
 
     const handleTopicClick = (topic) => {
@@ -22,7 +22,7 @@ export default function FeedbackTest() {
 
             <div className="feedback-main">
                 <img src={process.env.PUBLIC_URL + '/img/cat.png'} />
-                <h4>피드백 모아보기</h4>
+                <h4>{title}</h4>
             </div>
 
             <div className="feedback-list">

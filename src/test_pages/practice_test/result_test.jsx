@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import '../styles/result.css';
+import '../../styles/result.css';
 
-export default function Result() {
+export default function ResultTest() {
     const navigate = useNavigate();
     const { topic, question } = useParams();
     

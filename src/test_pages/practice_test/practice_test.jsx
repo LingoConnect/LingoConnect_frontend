@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import '../styles/practice.css';
-import { test_subquestions, test_feedback } from './data_test';
+import '../../styles/practice.css';
+import { test_subquestions, test_feedback } from '../data_test';
 
-const App = forwardRef((props, ref) => {
+const App = forwardRef((ref) => {
     const { topic, question } = useParams();
     const test_questions = [question, ...test_subquestions];
     const [answerInput, setAnswerInput] = useState('');
@@ -181,6 +181,6 @@ export default function PracticeTest() {
     const messageEndRef = useRef(null);
 
     return (
-        <App ref={messageEndRef} test_subquestions={test_subquestions} test_feedback={test_feedback} />
+        <App ref={messageEndRef} />
     );
 }

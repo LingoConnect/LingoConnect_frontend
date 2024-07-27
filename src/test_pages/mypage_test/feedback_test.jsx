@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import '../styles/feedback.css';
-import { SmallTitle } from '../components/title';
-import { test_topics } from './data_test';
+import '../../styles/feedback.css';
+import { SmallTitle } from '../../components/title';
+import { test_topics } from '../data_test';
 
-export default function Feedback() {
+export default function FeedbackTest() {
     const navigate = useNavigate();
 
     const handleTopicClick = (topic) => {
@@ -33,11 +33,13 @@ export default function Feedback() {
                                 <img 
                                     src={process.env.PUBLIC_URL + element.imgUrl}
                                     onClick={()=> { handleTopicClick(element.topic)}} />
-                                <h4>{element.topic}</h4>
+                                <h4 onClick={()=> { handleTopicClick(element.topic)}}>{element.topic}</h4>
                             </div>
                         )
                     })
                 }
+                <div className="feedback-list-box-transparent" />
+                <div className="feedback-list-box-transparent" />
             </div>
 
 

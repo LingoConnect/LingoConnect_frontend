@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { test_mainquestions } from './data_test';
-import '../styles/feedback_question.css';
-import { SmallTitle } from '../components/title';
-import { getMainQuestion } from '../api/learning_content_api';
+import { test_mainquestions } from '../data_test';
+import '../../styles/feedback_question.css';
+import { SmallTitle } from '../../components/title';
+import { getMainQuestion } from '../../api/learning_content_api';
 
 
-export default function FeedbackQuestion() {
+export default function FeedbackQuestionTest() {
     const navigate = useNavigate();
     const { topic } = useParams();
     const [isLatest, setIsLatest] = useState(true);

@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import '../styles/feedback.css';
-import { SmallTitle } from '../components/title';
-import { test_topics } from './data_test';
+import '../../styles/feedback.css';
+import { SmallTitle } from '../../components/title';
+import { test_topics } from '../../test_pages/data_test';
 
-export default function FeedbackTest() {
+export default function Feedback() {
     const navigate = useNavigate();
 
     const handleTopicClick = (topic) => {

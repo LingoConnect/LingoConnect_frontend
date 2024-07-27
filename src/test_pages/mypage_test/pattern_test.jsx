@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import '../../styles/pattern.css';
+import { SmallTitle } from '../../components/title';
+import { test_topics } from '../data_test';
 
-import '../styles/pattern.css';
-import { SmallTitle } from '../components/title';
-import { test_topics } from './data_test';
-
-export default function Pattern() {
+export default function PatternTest() {
     const navigate = useNavigate();
 
     const handleTopicClick = (topic) => {
@@ -31,14 +30,14 @@ export default function Pattern() {
                     test_topics.map(function(element) {
                         return (
                             <div className="pattern-list-box">
-                                <img 
-                                    src={process.env.PUBLIC_URL + element.imgUrl}
-                                    onClick={()=> { handleTopicClick(element.topic)}} />
-                                <h4>{element.topic}</h4>
+                                <img src={process.env.PUBLIC_URL + element.imgUrl} />
+                                <h4 onClick={()=> { handleTopicClick(element.topic)}}>{element.topic}</h4>
                             </div>
                         )
                     })
                 }
+                <div className="pattern-list-box-transparent" />
+                <div className="pattern-list-box-transparent" />
             </div>
 
 

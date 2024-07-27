@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, forwardRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import '../styles/practice.css';
-import { getFeedback, getAudioFeedback } from '../api/ai_api';
-import { getSubQuestion } from '../api/learning_content_api';
+import '../../styles/practice.css';
+import { getFeedback, getAudioFeedback } from '../../api/ai_api';
+import { getSubQuestion } from '../../api/learning_content_api';
 
-export default function Practice() {
+const PracticeConnent = forwardRef((ref) => {
     const { topic, question, id } = useParams();
     const navigate = useNavigate();
     const [answerInput, setAnswerInput] = useState('');
@@ -54,6 +54,12 @@ export default function Practice() {
             setActiveSendButton(true);
         }
     }, [answerInput, currentQuestionIndex, Questions.length]);
+
+    useEffect(() => {
+        if (ref.current) {
+            ref.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [currentQuestionIndex, ref]);
 
     const startRecording = async () => {
         setIsRecording(true);
@@ -268,9 +274,9 @@ export default function Practice() {
             )}
         </div>
     );
-}
+});
 
-function AIChat({ question }) {
+export function AIChat({ question }) {
     return (
         <div className="ai-chat">
             <div className="ai-chat-img">
@@ -278,8 +284,41 @@ function AIChat({ question }) {
                 <p />
             </div>
             <div className="ai-chat-dialogue">
-                <h4>{question}</h4>
+                <h4>{question}?</h4>
             </div>
         </div>
+    );
+}
+
+export function UserChat({ index, answers }) {
+    return (
+        <div className="answer-box">
+            <p>{answers[index]}</p>
+        </div>
+    );
+}
+
+export function AIFeedback({ index, test_feedback }) {
+    return (
+        <div className="feedback-box">
+            <img src={process.env.PUBLIC_URL + '/img/cat.png'} alt="cat" />
+            <p>{test_feedback[index].feedback}</p>
+        </div>
+    );
+}
+
+export function ScoreBox({ index, test_feedback }) {
+    return (
+        <div className="score-box">
+            <p>{test_feedback[index].score}</p>
+        </div>
+    );
+}
+
+export default function Practice() {
+    const messageEndRef = useRef(null);
+
+    return (
+        <PracticeConnent ref={messageEndRef} />
     );
 }

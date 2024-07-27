@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import '../styles/feedback_result.css';
-import { test_subquestions, test_feedback } from './data_test';
-import { SmallTitle } from '../components/title';
-import { AIChat, UserChat, AIFeedback, ScoreBox } from './practice_test';
+import '../../styles/feedback_result.css';
+import { test_subquestions, test_feedback } from '../data_test';
+import { SmallTitle } from '../../components/title';
+import { AIChat, UserChat, AIFeedback, ScoreBox } from '../practice_test/practice_test';
 
-export default function FeedbackResult() {
+export default function FeedbackResultTest() {
     const [answers, setAnswers] = useState(['수학이 제일 좋아']);
     const { topic, question } = useParams();
     const navigate = useNavigate();

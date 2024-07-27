@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import '../styles/pattern_result.css';
-import { SmallTitle } from '../components/title';
-import { test_mypage_pattern } from './data_test';
+import '../../styles/pattern_result.css';
+import { SmallTitle } from '../../components/title';
+import { test_mypage_pattern } from '../data_test';
 
 
 export default function PatternResultTest() {

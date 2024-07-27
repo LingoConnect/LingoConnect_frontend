@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/mypage.css';
-import Top from '../components/top';
-import { test_topics } from "./data_test";
+import '../../styles/mypage.css';
+import Top from '../../components/top';
+import { test_topics } from "../../test_pages/data_test";
 
 
-export default function MyPageTest() {
+export default function MyPage() {
     const navigate = useNavigate();
     const [list, setList] = useState([
         {
